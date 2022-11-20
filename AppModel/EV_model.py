@@ -76,12 +76,11 @@ def EV_optimize_MILP(SimLength, prices, inflexible_load, force_charge, reward_fo
                   soc_tplus1 == soc_t + EV_status[:-1]*eta*EV_power/time_step_per_hour - V2G_status[:-1]*EV_power/time_step_per_hour,
                   EV_status[:EV_flexible_window_timesteps[0]] == 0, EV_status[EV_flexible_window_timesteps[1]:] == 0,
                   V2G_status[:EV_flexible_window_timesteps[0]] == 0, V2G_status[EV_flexible_window_timesteps[1]:] == 0,
-                  
+                  EV_status + V2G_status <= 1,
                   (EV_status - V2G_status)*EV_power + inflexible_load - solar_charge >= 0,
                   EV_slack <=0, EV_slack<= soc-soc_min,
                   solar_charge <= solar_data*onsite_resource, solar_charge >= 0,
                   peak_house_load >= (EV_status - V2G_status)*EV_power + inflexible_load - solar_charge,
-                  
                   EV_slack_deadline <=0, EV_slack_deadline<= soc[-1]- soc_deadline,
                   ]
     prob = cp.Problem(objective, constraints)

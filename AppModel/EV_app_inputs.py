@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from datetime import date
 from EV_model import EV_optimize_LP, EV_optimize_MILP
-from EV_plots import EV_plot_gen
+from Plots import EV_plot_gen
 
 # Set directories and paths
 this_dir = Path(os.getcwd())
@@ -45,15 +45,15 @@ with dataset:
     force_stop = 1 if force_stop == 'Yes' else 0
     force_stop_price = float(right_col.text_input("Force stop threshold", value = 600))
     eta = float(left_col.text_input('Charge/Discharge efficiency', value = '0.98'))
-    start_time = mid_col.text_input('Start time of charge in hh:mm', value = '09:00')
-    end_time = right_col.text_input('End time of charge in hh:mm', value = '15:00')
+    start_time = mid_col.text_input('Start time of charge in hh:mm', value = '12:00')
+    end_time = right_col.text_input('End time of charge in hh:mm', value = '20:00')
     onsite_resources = left_col.selectbox("Make use of onsite resources: ", ('Yes','No'))
     onsite_resources = 1 if onsite_resources == 'Yes' else 0
     solar_capacity = float(mid_col.text_input("Installed solar capacity in kW: ", value = 4))
     solar_csv_name = right_col.selectbox("Solar base profile", ('PV_zurich',))
     solar_data = pd.read_csv(f'{data_dir}\{solar_csv_name}.csv', skiprows=3, index_col = 0, parse_dates=True)
-    inflex_start_time = left_col.text_input('Start time of inflexible load in hh:mm', value = '14:00')
-    inflex_end_time = mid_col.text_input('End time of inflexible load in hh:mm', value = '16:00')
+    inflex_start_time = left_col.text_input('Start time of inflexible load in hh:mm', value = '19:00')
+    inflex_end_time = mid_col.text_input('End time of inflexible load in hh:mm', value = '20:00')
     power_inflexible_load = float(right_col.text_input('Power rating of inflexible load in kW', value = '2'))
     peak_house_load = float(left_col.text_input('Peak house load in kW', value = '10'))
     solar_day = int(mid_col.text_input('Solar day integer from 0 to 365', value = '50'))
