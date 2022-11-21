@@ -96,3 +96,45 @@ def  heat_plot_gen(SimLength, price, heater_power, heater_status, temperature, T
     fig_format(app_status_heater)
     app_status_heater.update_layout(title = 'Heater status under optimal control')
     return temp_evol, app_status_heater
+
+
+def heat_plots(temperature, bang_bang_control_temp, T_upper_bound, T_lower_bound, T_set, T_out, solar_data, solar_charge, heater_status, prices,
+                bang_bang_control_status, bang_bang_solar, heater_power, solve_model):
+    
+    time_axis = pd.date_range(date.today(), periods=len(temperature.value), freq="15min")
+
+    fig_temp = make_subplots(specs=[[{"secondary_y": True}]])
+    fig_temp.add_trace(go.Scatter(x=time_axis, y=bang_bang_control_temp, name='Temperature bang-bang control', line=dict(color = 'pink', )), secondary_y=False)
+    fig_temp.add_trace(go.Scatter(x=time_axis, y=temperature.value, name='Temperature optimal control', line=dict(color = 'red')), secondary_y=False)
+    fig_temp.add_trace(go.Scatter(x=time_axis, y=T_out+15, name='Outside temperature + 15°C', line=dict(color='moccasin')), secondary_y=False)
+    fig_temp.add_trace(go.Scatter(x=time_axis, y=T_upper_bound, name='Upper temperature bound', line=dict(color = 'black', dash = 'dash')), secondary_y=False)
+    fig_temp.add_trace(go.Scatter(x=time_axis, y=T_lower_bound, name='Lower temperature bound', line=dict(color = 'black', dash = 'dot')), secondary_y=False)
+    fig_temp.add_trace(go.Scatter(x=time_axis, y=T_set, name='Temperature set-point', line=dict(color = 'gray', dash = 'dot')), secondary_y=False)
+    fig_temp.update_yaxes(title_text="Temperature in °C", secondary_y=False)
+    fig_format(fig_temp)
+    fig_temp.update_layout(title = 'Temperature evolution')
+    if solve_model == 'MILP':
+        heater_status = heater_power*heater_status
+    optimal_status = make_subplots(specs=[[{"secondary_y": True}]])
+    optimal_status.add_trace(go.Scatter(x=time_axis, y=solar_data, name='Solar power generation', line=dict(color='mistyrose', width = 0), fill = 'tozeroy'), secondary_y=False)
+    optimal_status.add_trace(go.Scatter(x=time_axis, y=heater_status.value/1000, name='Heater Status', line=dict(color='orchid')), secondary_y=False)
+    optimal_status.add_trace(go.Scatter(x=time_axis, y=solar_charge.value, name='Solar power consumption', line=dict(color='#bcbd22', width = 0), fill = 'tozeroy'), secondary_y=False)
+    optimal_status.add_trace(go.Scatter(x=time_axis, y=prices/1000, name='Prices', line=dict(color='#8c564b')), secondary_y=True)
+    optimal_status.update_yaxes(title_text="Power in kW", secondary_y=False)
+    optimal_status.update_yaxes(title_text="Price in €/kWh", secondary_y=True)
+    fig_format(optimal_status)
+    optimal_status.update_layout(title = 'Heater Optimal Control')
+
+
+    bangbangcontrol = make_subplots(specs=[[{"secondary_y": True}]])
+    bangbangcontrol.add_trace(go.Scatter(x=time_axis, y=solar_data, name='Solar power generation', line=dict(color='mistyrose', width = 0), fill = 'tozeroy'), secondary_y=False)
+    bangbangcontrol.add_trace(go.Scatter(x=time_axis, y=bang_bang_control_status/1000,  name = 'Heater Status', line=dict(color='orchid')), secondary_y=False)
+    bangbangcontrol.add_trace(go.Scatter(x=time_axis, y=bang_bang_solar, name='Solar power consumption', line=dict(color='#bcbd22', width = 0), fill = 'tozeroy'), secondary_y=False)
+    bangbangcontrol.add_trace(go.Scatter(x=time_axis, y=prices/1000, name='Prices', line=dict(color='#8c564b')), secondary_y=True)
+    bangbangcontrol.update_yaxes(title_text="Power in kW", secondary_y=False)
+    bangbangcontrol.update_yaxes(title_text="Prices in €/kWh", secondary_y=True)
+    fig_format(bangbangcontrol)
+    # bangbangcontrol.write_image(f"{filename_cwd}/figures/fig9_non_var_setpoint.pdf")
+    bangbangcontrol.update_layout(title = 'Heater Bang-bang Control')
+
+    return fig_temp, optimal_status, bangbangcontrol

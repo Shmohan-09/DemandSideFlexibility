@@ -6,7 +6,7 @@ from datetime import date
 import streamlit as st
 import os
 from app_heating_func import heat_plan, heat_plan_MILP
-from app_heating_plot import heat_plots
+from Plots import heat_plots
 from pathlib import Path
 
 # Set directories and paths
