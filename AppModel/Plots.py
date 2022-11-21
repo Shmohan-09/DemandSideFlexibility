@@ -190,3 +190,18 @@ def multi_heater_share_plot(price, T_upper_bound, T_lower_bound, temperature, ho
     heat_share_status.update_layout(title = 'Heater Status Independent Setup')
     return heat_share_temp, heat_share_status
 
+def plot_atomic(prices, appliance_status, base_profile, flexible_window_timesteps, solar_data, solar_charge):
+    atomic_status = make_subplots(specs=[[{"secondary_y": True}]])
+    time_axis = pd.date_range(date.today(), periods=len(prices), freq="15min")
+    atomic_status.add_trace(go.Scatter(x=time_axis, y=solar_data, name='Solar Power Production', line=dict(color='mistyrose', width = 0), fill = 'tozeroy'), secondary_y=False)
+    atomic_status.add_trace(go.Scatter(x=time_axis, y=appliance_status, name='Optimal appliance scheduling', line=dict(color='purple')), secondary_y=False)
+    atomic_status.add_trace(go.Scatter(x=time_axis, y=base_profile, name='Base appliance scheduling', line=dict(color='purple', dash = 'dash')), secondary_y=False)
+    # atomic_status.add_trace(go.Scatter(x=time_axis, y=solar_charge.value, name='Solar consumption', line=dict(color='#bcbd22', width = 0), fill = 'tozeroy'), secondary_y=False)
+    atomic_status.add_trace(go.Scatter(x=time_axis, y=prices/1000, name='Prices', line=dict(color='#8c564b')), secondary_y=True)
+    atomic_status.update_yaxes(title_text="Appliance Power Consumption in kW", secondary_y=False)
+    atomic_status.update_yaxes(title_text="Price Level in €/kWh", secondary_y=True)    
+    atomic_status.add_trace(go.Scatter(x=time_axis, y=solar_charge.value, name='Solar Power Consumption', line=dict(color='#bcbd22', width = 0), fill = 'tozeroy'), secondary_y=False)
+    atomic_status.add_vrect(x0=time_axis[flexible_window_timesteps[0]], x1=time_axis[flexible_window_timesteps[1]], fillcolor="#7f7f7f", opacity=0.25, line_width=0)
+    fig_format(atomic_status)
+
+    return atomic_status

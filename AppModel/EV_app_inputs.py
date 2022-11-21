@@ -66,7 +66,7 @@ day_ahead = day_ahead.resample('15T').ffill()
 price = day_ahead[0].values 
 prices = np.append(price, np.array(3*[price[-1]]))
 prices = np.append(prices,prices)
-solar_data = solar_data.resample('15T').ffill()
+solar_data = solar_data.resample('15T').mean().interpolate(method='linear')
 solar_data = solar_data['electricity'].values
 EV_flexible_window = [start_time, end_time] # Time in hh:mm
 inflexible_window = [inflex_start_time, inflex_end_time]

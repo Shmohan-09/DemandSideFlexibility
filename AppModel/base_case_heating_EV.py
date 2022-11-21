@@ -10,44 +10,12 @@ def downsample_array(SimLength, numbers_of_house, input_array):
             new_array[i,j] = np.mean(input_array[4*i:4*(i+4), j])
     return new_array
 
-# def bang_bang_heating(SimLength, numbers_of_house, R, C, T_start, T_upper_bound, T_lower_bound, heater_power,
-#     time_step_per_hour, T_out):
-
-#     bang_bang_control_status = np.zeros((int(SimLength*60/time_step_per_hour), numbers_of_house))
-#     bang_bang_control_temp = np.zeros((int(SimLength*60/time_step_per_hour), numbers_of_house))
-#     bang_bang_control_temp[0,:] = T_start[0,:]
-
-#     for col in range(numbers_of_house):
-#         if bang_bang_control_temp[0, col] >= T_upper_bound[0, col]:
-#             bang_bang_control_status[0, col] = 0
-#         elif bang_bang_control_temp[0, col] <= T_lower_bound[0, col]:
-#             bang_bang_control_status[0, col] = heater_power[0, col]
-#         else:
-#             bang_bang_control_status[0, col] = np.random.choice([0,1])
-
-#     for row in range(1,SimLength):
-#         for col in range(numbers_of_house):
-#             bang_bang_control_temp[row, col] = T_out[row, col] + bang_bang_control_status[row-1, col]*R[row, col] - (T_out[row, col] + bang_bang_control_status[row-1, col]*R[row, col] - bang_bang_control_temp[row-1, col])*np.exp(-1*(1*60)/(R[row, col]*C[row, col]))
-#             T_nex_on = T_out[row, col] + heater_power[0, col]*R[row, col] - (T_out[row, col] + heater_power[0, col]*R[row, col] - bang_bang_control_temp[row, col])*np.exp(-1*(1*60)/(R[row, col]*C[row, col]))
-#             T_nex_off = T_out[row, col] - (T_out[row, col] - bang_bang_control_temp[row, col])*np.exp(-1*(1*60)/(R[row, col]*C[row, col]))
-#             if T_nex_on >= T_upper_bound[row, col]:
-#                 bang_bang_control_status[row, col] = 0
-#             elif T_nex_off <= T_lower_bound[row, col]:
-#                 bang_bang_control_status[row, col] = heater_power[0, col]
-#             else:
-#                 bang_bang_control_status[row, col] = bang_bang_control_status[row-1, col]
-        
-#         bang_bang_control_status_new = downsample_array(SimLength, numbers_of_house, bang_bang_control_status)
-#         bang_bang_control_temp_new = downsample_array(SimLength, numbers_of_house, bang_bang_control_temp)
-
-#     return bang_bang_control_temp_new, bang_bang_control_status_new
-
 def bang_bang_heating(SimLength, numbers_of_house, R, C, T_start, T_upper_bound, T_lower_bound, heater_power,
     time_step_per_hour, T_out):
 
     bang_bang_control_status = np.zeros((int(SimLength), numbers_of_house))
     bang_bang_control_temp = np.zeros((int(SimLength), numbers_of_house))
-    bang_bang_control_temp[0,:] = T_start[0,:]
+    bang_bang_control_temp[0,:] = T_start[0].values
 
     for col in range(numbers_of_house):
         if bang_bang_control_temp[0, col] >= T_upper_bound[0, col]:
