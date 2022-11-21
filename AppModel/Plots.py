@@ -138,3 +138,31 @@ def heat_plots(temperature, bang_bang_control_temp, T_upper_bound, T_lower_bound
     bangbangcontrol.update_layout(title = 'Heater Bang-bang Control')
 
     return fig_temp, optimal_status, bangbangcontrol
+
+def multi_heater_plot(price, time_step_per_hour, T_upper_bound, T_lower_bound, temperature, house_number, T_set, T_out, solar_data_multi_home, solar_charge, heater_status):
+    time_axis = pd.date_range(date.today(), periods=len(temperature.value), freq="15min")    
+
+
+    heat_share_temp = make_subplots(specs=[[{"secondary_y": True}]])
+    heat_share_temp = make_subplots(specs=[[{"secondary_y": True}]])
+    heat_share_temp.add_trace(go.Scatter(x=time_axis, y=temperature.value[:,house_number], name='Temperature optimal control', line=dict(color = 'red')), secondary_y=False)
+    heat_share_temp.add_trace(go.Scatter(x=time_axis, y=T_upper_bound[:,house_number], name='Upper temperature bound', line=dict(color = 'black', dash = 'dash')), secondary_y=False)
+    heat_share_temp.add_trace(go.Scatter(x=time_axis, y=T_lower_bound[:,house_number], name='Lower temperature bound', line=dict(color = 'black', dash = 'dot')), secondary_y=False)
+    heat_share_temp.add_trace(go.Scatter(x=time_axis, y=T_out+15, name='Outside temperature + 15°C', line=dict(color='moccasin')), secondary_y=False)
+    heat_share_temp.add_trace(go.Scatter(x=time_axis, y=T_set[:,house_number], name='Temperature set-point', line=dict(color = 'gray', dash = 'dot')), secondary_y=False)
+    heat_share_temp.update_yaxes(title_text="Temperature in °C", secondary_y=False)
+    heat_share_temp.update_yaxes(title_text="Price Level in €/kWh", secondary_y=True)
+    fig_format(heat_share_temp)
+    heat_share_temp.update_layout(title = 'Temperature Evolution Independent Setup')
+
+    heat_share_status = make_subplots(specs=[[{"secondary_y": True}]])
+    heat_share_status.add_trace(go.Scatter(x=time_axis, y=solar_data_multi_home[:,house_number], name='Solar power generation', line=dict(color='mistyrose', width = 0), fill = 'tozeroy'), secondary_y=False)
+    heat_share_status.add_trace(go.Scatter(x=time_axis, y=heater_status.value[:,house_number], name='Heater', line=dict(color='orchid')), secondary_y=False)
+    heat_share_status.add_trace(go.Scatter(x=time_axis, y=solar_charge.value[:,house_number], name='Solar power consumption', line=dict(color='#bcbd22', width = 0), fill = 'tozeroy'), secondary_y=False)
+    heat_share_status.add_trace(go.Scatter(x=time_axis, y=price/1000, name='Prices', line=dict(color='#8c564b')), secondary_y=True)
+    heat_share_status.update_yaxes(title_text="Power in kW", secondary_y=False)
+    heat_share_status.update_yaxes(title_text="Price Level in €/kWh", secondary_y=True)
+    fig_format(heat_share_status)
+    heat_share_status.update_layout(title = 'Heater Status Independent Setup')
+
+    return heat_share_temp, heat_share_status
