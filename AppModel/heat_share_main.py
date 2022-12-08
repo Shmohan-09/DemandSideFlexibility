@@ -1,3 +1,5 @@
+# The inputs are similar to the heat planning algorithm, and thus scarcely commented.
+
 # import necessary libraries
 import numpy as np
 import pandas as pd
@@ -19,7 +21,7 @@ left_col, mid_col, right_col = st.columns(3)
 
 with header:
     st.title('Mutli-Heater optimization')
-    st.header('This optimization heat sharing between independent houses')
+    st.header('This optimization heat sharing between independent houses - House 0 is efficient')
 
 with dataset:
     time_granularity = int(left_col.selectbox('Time granularity (min)', ('15',)))
@@ -28,7 +30,7 @@ with dataset:
     day = int(right_col.text_input("Calendar day between 0 to 365", value = 50))
     heater_power_csv = left_col.selectbox("Heater power", ('heater_power_share',))
     heater_power = pd.read_csv(f'{data_dir}\{heater_power_csv}.csv', header=None).values
-    R_csv = mid_col.selectbox("Heating resistivity °/Watt (60-min)", ('R_share',))
+    R_csv = mid_col.selectbox("Heating resistivity °C/Watt (60-min)", ('R_share',))
     R = pd.read_csv(f'{data_dir}\{R_csv}.csv', header=None).values
     tao_csv = right_col.selectbox("Time constant in hours (60-min)", ('tao_share',))
     tao = pd.read_csv(f'{data_dir}\{tao_csv}.csv', header=None).values
@@ -44,7 +46,7 @@ with dataset:
     solar_capacity = pd.read_csv(f'{data_dir}\{solar_cap_csv}.csv', header=None).values
     onsite_resources = right_col.selectbox("Make use of onsite resources", ('Yes', 'No'))
     onsite_resources = 1 if onsite_resources == 'Yes' else 0
-    heat_share_allow = left_col.selectbox("Allow heat sharing", ('Yes', 'No'))
+    heat_share_allow = left_col.selectbox("Allow heat sharing", ('Yes', 'No')) # this is the command that choses to or not to opt for heat sharing
     dead_band = float(mid_col.text_input("Temperature deviation in °C", value = 2))
     efficiency_other_dependents = right_col.text_input("Efficiency of inefficient heaters", value = 0.7)
     allow_deadband_flexibility = left_col.selectbox("Allow DB flexibility (DBF)?", ('Yes', 'No'))
@@ -52,7 +54,7 @@ with dataset:
     allow_deadband_flexibility_price = float(mid_col.text_input("DBF price threshold (€/MWh)", value = 600))
     
     
-
+optimization_horizon = 24
 hour = pd.date_range(date.today(), periods=24, freq="H")
 day_ahead.index = hour
 day_ahead = day_ahead.resample('15T').ffill()
@@ -70,11 +72,11 @@ if heat_share_allow == 'No':
     prices, heater_status, T_lower_bound, T_upper_bound, temperature, T_set, heater_power_array, solar_charge, number_of_houses, time_step_per_hour, T_start, solar_data_multi_home, T_out\
     = multi_heater_individual(T_start, T_set, dead_band, heater_power, T_out, prices, R, tao, 
                 time_granularity, solar_data, solar_capacity, allow_deadband_flexibility, 
-                allow_deadband_flexibility_price, onsite_resources, day)
+                allow_deadband_flexibility_price, onsite_resources, day, optimization_horizon)
 else:
    prices, heater_status, T_lower_bound, T_upper_bound, temperature, T_set, heater_power_array, solar_charge, \
         number_of_houses, time_step_per_hour, T_start, heater_status_ineff, solar_data_multi_home, T_out = multi_heater_share(T_start, T_set, dead_band, heater_power, T_out, prices, R, tao, time_granularity, solar_data, solar_capacity, allow_deadband_flexibility, 
-                allow_deadband_flexibility_price, efficiency_other_dependents, onsite_resources, day)
+                allow_deadband_flexibility_price, efficiency_other_dependents, onsite_resources, day, optimization_horizon)
 
 plots = st.container()
 with plots:
