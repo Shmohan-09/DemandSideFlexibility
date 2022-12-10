@@ -1,19 +1,14 @@
-# import necessary libraries
+# this script gives function for all the input file read and process actions to be used by the optimizer for EV
+
 import numpy as np
-import pandas as pd
-from datetime import date
-import streamlit as st
-import os
 
 def process_EV_schedule(EV_schedule, time_step_per_hour, time_granularity, numbers_of_house, range_anxiety):
+    # EV parameters are processed for all the 10 households
     EV_schedule['Start Minute'] = EV_schedule['Start'].map(lambda x: int(x.split(':')[0])*time_step_per_hour + int(np.ceil(int(x.split(':')[1])/time_granularity)))
     EV_schedule['End Minute'] = EV_schedule['End'].map(lambda x: int(x.split(':')[0])*time_step_per_hour + int(np.floor(int(x.split(':')[1])/time_granularity)))
     EV_schedule['End Minute'] = EV_schedule['End Minute'] + 24*time_step_per_hour*(EV_schedule['Start Minute'] > EV_schedule['End Minute'])
     
-    if sum((EV_schedule['Start Minute'] > EV_schedule['End Minute'])) > 0:
-        SimLength = 24*time_step_per_hour*2
-    else:
-        SimLength = 24*time_step_per_hour
+    SimLength = 24*time_step_per_hour
 
     EV_schedule['SOC min'] = EV_schedule['Battery Size']*0.2
     EV_schedule['SOC max'] = EV_schedule['Battery Size']*0.9
@@ -29,7 +24,7 @@ def process_EV_schedule(EV_schedule, time_step_per_hour, time_granularity, numbe
     start_times = EV_schedule['Start Minute'].values
     end_times = EV_schedule['End Minute'].values
 
-    one_plus_deadline = EV_schedule['SOC Deadline plus One'].values
+    one_plus_deadline = EV_schedule['SOC Deadline plus One'].values # considering an inherent tendency of range anxiety to meet the soc deadline
 
     EV_power = np.zeros((SimLength, numbers_of_house))
     EV_power[:] = EV_schedule['Plugin Power'].values

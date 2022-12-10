@@ -63,9 +63,9 @@ with dataset:
     solar_data = solar_data['electricity'].values
     solar_data = np.append(solar_data, np.array(3*[solar_data[-1]]))
 
-    day = int(right_col.text_input('Day of the year (integer b/w 0 to 365)', value = '50')) # Day of the year
+    day = int(right_col.text_input('Day of the year (integer b/w 0 to 363)', value = '50')) # Day of the year
     solve_model = left_col.selectbox('Solve model', ('Variable power', 'Constant power')) # Model to use (Linear programming and MILP)
-    
+
 optimization_horizon = 24 # 24 hour as we consider day ahead optimization
 time_step_per_hour = 60//time_granularity # number of time steps per hour
 C = (tao*3600/R) # thermal capacity of the room

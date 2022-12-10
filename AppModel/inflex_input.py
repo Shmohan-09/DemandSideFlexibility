@@ -1,6 +1,7 @@
 """
 To create interface of the Streamlit Web App!
 Inputs are obtained here
+The inputs are quite similar to those in EV model, thus comments are skipped here
 """
 
 # Import all necessary libraries
@@ -52,6 +53,7 @@ solar_data = solar_data['electricity'].values
 inflexible_window = [inflex_start_time, inflex_end_time]
 
 time_step_per_hour = 60 // time_granularity
+optimization_horizon = 24
 
 inflex_start_time = inflexible_window[0].split(':')
 inflex_start_time = int(inflex_start_time[0])*time_step_per_hour + int(np.ceil(int(inflex_start_time[1])/time_granularity))
@@ -65,7 +67,7 @@ inflexible_load = np.zeros(SimLength)
 inflexible_load[inflex_start_time:inflex_end_time] = power_inflexible_load
 
 status_stack, appliance_profile_stack, prices, solar_charge, solar_data, base_profile, energy_consumption_cost_optimal, energy_consumption_cost_base = \
-    unint_scheduler(SimLength, power_inflexible_load, time_of_run, flexible_window_timesteps, prices, time_granularity, solar_capacity, solar_data, solar_day)
+    unint_scheduler(SimLength, power_inflexible_load, time_of_run, flexible_window_timesteps, prices, time_granularity, solar_capacity, solar_data, solar_day, optimization_horizon)
 
 appliance_status = (appliance_profile_stack@status_stack).value
 
@@ -74,9 +76,3 @@ plots = st.container()
 with plots:
     st.header('Plots')
     st.plotly_chart(atomic_status)
-results = st.container()
-with results:
-    st.header('Numbers')
-    st.write(f'Electricity consumption cost without flexibility: {np.round(energy_consumption_cost_base,2)} €/kWh')
-    st.write(f'Electricity consumption cost with flexibility: {np.round(energy_consumption_cost_optimal,2)} €/kWh')
-    

@@ -1,5 +1,6 @@
-# import necessary libraries
+# the model utilizes similar input and modeling strategies for EV and heating, and the similar parts have been skipped in the comments.
 
+# import necessary libraries
 import numpy as np
 import pandas as pd
 from datetime import date
@@ -22,77 +23,67 @@ header = st.container()
 dataset = st.container()
 user_inputs = st.container()
 
-left_col, left_mid_col, mid_col, right_mid_col, right_col = st.columns(5)
+left_col, left_mid_col, right_mid_col, right_col = st.columns(4)
 with header:
     st.title('Mutli home - multi device optimization')
     st.header('Optimal appliance scheduling in energy community')
 
-with left_col:
-    csv_name = mid_col.selectbox("Day ahead prices in €/MWh (60-min)", ('Price','Price_high',))
+    csv_name = left_col.selectbox("Day ahead prices in €/MWh (60-min)", ('Price','Price_high',))
     day_ahead = pd.read_csv(f'{data_dir}\{csv_name}.csv', header = None)
     day_ahead.index = hour
     day_ahead = day_ahead.resample('15T').ffill()
     prices = day_ahead[0].values 
     prices = np.append(prices, np.array(3*[prices[-1]]))
 
-    solar_csv_name = right_col.selectbox("Solar base profile", ('PV_zurich',))
+    solar_csv_name = left_mid_col.selectbox("Solar base profile", ('PV_zurich',))
     solar_data = pd.read_csv(f'{data_dir}\{solar_csv_name}.csv', skiprows=3, index_col = 0, parse_dates=True)
     solar_data = solar_data.resample('15T').mean().interpolate(method='linear')
     solar_data = solar_data['electricity'].values
     solar_data = np.append(solar_data, np.array(3*[solar_data[-1]]))
 
-    inflexible_load_csv = st.selectbox("Schedule of inflexible load", ('inflexible_load',))
+    inflexible_load_csv = right_mid_col.selectbox("Schedule of inflexible load", ('inflexible_load',))
     inflexible_load = pd.read_csv(f'{data_dir}\{inflexible_load_csv}.csv', header = None).values
 
-    time_granularity = st.text_input("Time granularity", value = 15)
-    time_granularity = float(time_granularity)
+    EV_schedule_csv = right_col.selectbox("Schedule of EV", ('EV_schedule',))
+    EV_schedule = pd.read_csv(f'{data_dir}\{EV_schedule_csv}.csv')
 
-    day_of_year = st.slider("Day of year", 0,364,50)
-    day_of_year = int(day_of_year) 
-
-    onsite_resources = st.selectbox("Make use of onsite resources?", ('Yes', 'No'))
-    onsite_resources = 1 if onsite_resources == 'Yes' else 0   
-
-with left_mid_col: 
-
-    heater_power_csv = st.selectbox("Heater power file", ('heater_power',))
+    heater_power_csv = right_col.selectbox("Heater power file", ('heater_power',))
     heater_power = pd.read_csv(f'{data_dir}\{heater_power_csv}.csv', header = None).values
 
-    T_out_csv = right_col.selectbox("Ambient temperature °C (60-min)", ('T_out_Zurich',))
+    T_out_csv = left_col.selectbox("Ambient temperature °C (60-min)", ('T_out_Zurich',))
     T_out = pd.read_csv(f'{data_dir}\{T_out_csv}.csv', skiprows=3, index_col = 0, parse_dates=True)
     T_out = T_out.resample('15T').mean().interpolate(method='linear')
     T_out = T_out['temperature'].values
     T_out_array = np.append(T_out, np.array(3*[T_out[-1]]))
     
-    T_set_csv = st.selectbox("Setpoint Temperature file", ('T_set_community',))
+    T_set_csv = left_mid_col.selectbox("Setpoint Temperature file", ('T_set_community',))
     T_set = pd.read_csv(f'{data_dir}\{T_set_csv}.csv', header = None).values
 
-    T_start_csv = st.selectbox("Start Temperature file", ('T_start',))
+    T_start_csv = right_mid_col.selectbox("Start Temperature file", ('T_start',))
     T_start = pd.read_csv(f'{data_dir}\{T_start_csv}.csv', header = None)
 
-    R_csv = st.selectbox("Heating resistivity file", ('R_community',))
+    R_csv = left_mid_col.selectbox("Heating resistivity file", ('R_community',))
     R = pd.read_csv(f'{data_dir}\{R_csv}.csv', header = None).values
 
-    tao_csv = st.selectbox("Time constant file", ('tao_community',))
+    tao_csv = left_col.selectbox("Time constant file", ('tao_community',))
     tao = pd.read_csv(f'{data_dir}\{tao_csv}.csv', header = None).values
 
-with mid_col:
-    dead_band = st.text_input("Input tolerance deadband (DB) in °C", value = 2)
-    dead_band = float(dead_band)
-
-    allow_deadband_flexibility = st.selectbox("Allow DB flexibility (DBF)?", ('Yes', 'No'))
+    allow_deadband_flexibility = right_mid_col.selectbox("Allow DB flexibility (DBF)?", ('Yes', 'No'))
     allow_deadband_flexibility = 1 if allow_deadband_flexibility == 'Yes' else 0
 
-    allow_deadband_flexibility_price = st.text_input("DBF price threshold (€/MWh)", value = 600)
-    allow_deadband_flexibility_price = float(allow_deadband_flexibility_price)
-    
-    EV_schedule_csv = st.selectbox("Schedule of EV", ('EV_schedule',))
-    EV_schedule = pd.read_csv(f'{data_dir}\{EV_schedule_csv}.csv')
+    dead_band = right_col.text_input("Input tolerance deadband (DB) in °C", value = 2)
+    dead_band = float(dead_band)
 
-    v2g_feasibility = st.selectbox("V2G functionality availablity: ", ('Yes', 'No'))
+    allow_deadband_flexibility_price = left_col.text_input("DBF price threshold (€/MWh)", value = 600)
+    allow_deadband_flexibility_price = float(allow_deadband_flexibility_price)
+
+    range_anxiety = left_mid_col.selectbox("Activate for range anxiety: ", ('No', 'Yes')) # activate range anxiety for EV
+    range_anxiety = 1 if range_anxiety == 'Yes' else 0
+
+    v2g_feasibility = right_mid_col.selectbox("V2G functionality availablity: ", ('Yes', 'No'))
     v2g_feasibility = 1 if v2g_feasibility == 'Yes' else 0
-    
-    end_soc = st.selectbox('Charge to ',('Next day driving deadline', 'Full'))
+
+    end_soc = right_col.selectbox('Charge to ',('Next day driving deadline', 'Full')) # choice between charging to deadline and to maximum
     if end_soc == 'Next day driving deadline':
         meet_deadline = 1
         charge_to_max = 0
@@ -100,56 +91,59 @@ with mid_col:
         meet_deadline = 0
         charge_to_max = 1
 
-    range_anxiety = st.selectbox("Activate for range anxiety: ", ('No', 'Yes'))
-    range_anxiety = 1 if range_anxiety == 'Yes' else 0
-
-with right_mid_col:
-    force_charge = st.selectbox("EV Force charge below a certain price?", ('Yes', 'No'))
-    force_charge = 1 if force_charge == 'Yes' else 0
-    
-    force_stop = st.selectbox("EV Force stop above a certain price?(€/MWh)", ('Yes', 'No'))
+    force_stop = left_col.selectbox("Force discharge EV during high prices?", ('Yes', 'No')) 
     force_stop = 1 if force_stop == 'Yes' else 0
-    force_charge_price = st.text_input("EV Force charge threshold (€/MWh)", value = 250)
+    
+    force_charge_price = left_mid_col.text_input("EV force charge threshold (€/MWh)", value = 250)
     force_charge_price = int(force_charge_price)
 
-    force_stop_price = st.text_input("EV Force stop threshold(€/MWh)", value = 600)
+    force_charge = right_col.selectbox("Force charge EV during low prices?", ('Yes', 'No'))
+    force_charge = 1 if force_charge == 'Yes' else 0
+   
+    force_stop_price = right_mid_col.text_input("EV force discharge threshold(€/MWh)", value = 600)
     force_stop_price = int(force_stop_price)
+
+    onsite_resources = left_col.selectbox("Make use of onsite resources?", ('Yes', 'No'))
+    onsite_resources = 1 if onsite_resources == 'Yes' else 0   
+
+    comm_batt = left_mid_col.selectbox("Use community battery?", ('Yes', 'No')) # Availability of community battery
+    comm_batt = 1 if comm_batt == 'Yes' else 0
+
+    comm_battery_size = right_mid_col.text_input("Community battery size", value = 120) # Size of community battery
+    comm_battery_size = int(comm_battery_size)
+
+    save_comm_batt = right_col.selectbox("Community battery energy anxiety?", ('No', 'Yes')) # Energy anxiety for community battery
+    save_comm_batt = 1 if save_comm_batt == 'Yes' else 0
+
+    comm_battery_init_soc = left_col.text_input("Initial community battery SoC (>= 20% battery capacity)", value = int(comm_battery_size*0.2))  # Initialize SoC of community battery
+    comm_battery_init_soc = float(comm_battery_init_soc)
+    comm_battery_init_soc = max(comm_battery_init_soc, 20*comm_battery_size/100)
     
-    charge_option = st.selectbox('In a high price scenario',('Use Community battery', 'Use Community battery + V2g', 'Charge to full anyway', 'No action'))
+    charge_option = left_mid_col.selectbox('In a high price scenario',('Use Community battery', 'Use Community battery + V2g', 'Charge to full anyway', 'No action')) # Action during high priced hours - not relevant to masters thesis
     charge_option_1, charge_option_2, charge_option_3 = 0, 0, 0
-    
     if charge_option == 'Charge to full anyway':
         charge_option_1 = 1
     elif charge_option == 'Use Community battery + V2g':
         charge_option_2 = 1
     elif charge_option == 'No action':
-        charge_option_3 = 1
+        charge_option_3 = 1    
 
-with right_col:
-    
+    ceiling = right_mid_col.selectbox("Max load penalty", ('No', 'Yes')) # Penalty on max power consumption
+    ceiling = 1 if ceiling == 'Yes' else 0
 
-    comm_batt = st.selectbox("Use community battery?", ('Yes', 'No'))
-    comm_batt = 1 if comm_batt == 'Yes' else 0
-
-    comm_battery_size = st.text_input("Community battery size", value = 120)
-    comm_battery_size = int(comm_battery_size)
-
-    comm_battery_init_soc = st.slider("Initial soc community battery", int(comm_battery_size*0.2), comm_battery_size, int(comm_battery_size*0.2))
-    comm_battery_init_soc = float(comm_battery_init_soc)
-    if comm_battery_init_soc < 20*comm_battery_size/100:
-        comm_battery_init_soc = 20*comm_battery_size/100
-    save_comm_batt = st.selectbox("Save some level of community battery charge?", ('No', 'Yes'))
-    save_comm_batt = 1 if save_comm_batt == 'Yes' else 0
-
-    peak_house_load = st.text_input("Peak houseload: ", value = 10)
+    peak_house_load = left_col.text_input("Peak houseload: ", value = 10) # Peak house load
     peak_house_load = float(peak_house_load)
 
-    peak_network = st.text_input("Peak network load: ", value = 100)
+    peak_network = left_mid_col.text_input("Peak network load: ", value = 100) # Peak network load
     peak_network = float(peak_network)
 
-    ceiling = st.selectbox("Max load penalty", ('No', 'Yes'))
-    ceiling = 1 if ceiling == 'Yes' else 0
+    time_granularity = right_col.text_input("Time granularity", value = 15)
+    time_granularity = float(time_granularity)
+
+    day_of_year = right_col.slider("Day of year", 0,364,50)
+    day_of_year = int(day_of_year) 
     
+# Energy planner
 prices, solar_data, solar_charge, soc, EV_status, V2G_status, soc_min, soc_max, soc_deadline, numbers_of_house, SimLength, start_times, end_times, \
     inflexible_load, EV_schedule, time_step_per_hour, temperature, heater_status, T_lower_bound, \
         T_upper_bound, C, R, solar_data_multi_home, community_battery, community_battery_discharge, solar_to_community, low_price_charge_community, T_out, soc_start, one_plus_deadline = \
@@ -165,6 +159,7 @@ prices, solar_data, solar_charge, soc, EV_status, V2G_status, soc_min, soc_max, 
 
 time_axis = pd.date_range(date.today(), periods=len(prices), freq="15min")
 
+# to take care of EV energy burn
 eta = EV_schedule['Eta'].values
 charge = np.zeros(soc.shape)
 discharge = np.zeros(soc.shape)
@@ -180,6 +175,8 @@ for i in range(soc.shape[0]):
 
 solar_optimal_consumption = np.sum(solar_charge.value, axis = 0)/time_step_per_hour
 
+
+# Base case device power consumption
 bang_bang_control_temp, bang_bang_control_status = bang_bang_heating(SimLength, numbers_of_house,\
     R, C, T_start, T_upper_bound, T_lower_bound, heater_power, time_step_per_hour, T_out)
 
@@ -189,6 +186,8 @@ soc_uncontrolled_status, soc_uncontrolled_evolution = uncontrolled_EV(SimLength,
 solar_base_case_consumption, solar_base_case = base_solar_consumption(solar_data_multi_home, soc_uncontrolled_status,\
     bang_bang_control_status, inflexible_load, time_step_per_hour, onsite_resources)
 
+
+# Result compilation for energy consumption and related costs for different devices/and the whole system
 total_grid_energy_consumption_optimal = np.sum(EV_status.value - V2G_status.value + heater_status.value + inflexible_load - solar_charge.value - community_battery_discharge.value, axis = 0)/time_step_per_hour
 total_grid_energy_base_case = np.sum(bang_bang_control_status/1000 + soc_uncontrolled_status + inflexible_load - solar_base_case, axis = 0)/time_step_per_hour
 total_grid_energy_consumption_optimal_cost = prices@(EV_status.value - V2G_status.value + heater_status.value + inflexible_load - solar_charge.value - community_battery_discharge.value)/(1000*time_step_per_hour)
@@ -235,7 +234,7 @@ for house in range(0,numbers_of_house*2,2):
     result_csv.loc[house+1, 'Self-consumption home end (%)'] = np.round(100*result_csv.loc[house+1, 'Solar consumption (kWh)']/result_csv.loc[house+1, 'Total energy consumption (kWh)'])
     result_csv.loc[house+1, 'Total heat energy consumption (kWh)'] = np.round(total_heat_energy_consumption_optimal[int(house/2)], 2)
     result_csv.loc[house+1, 'Net EV energy consumption (kWh)'] = np.round(total_EV_energy_consumption_optimal[int(house/2)], 2)
-# print(result_csv)
+
 grid_load_optimal = EV_status.value - V2G_status.value + heater_status.value + inflexible_load - solar_charge.value - community_battery_discharge.value
 grid_load_base = soc_uncontrolled_status + bang_bang_control_status/1000 + inflexible_load - solar_base_case
 
@@ -265,8 +264,6 @@ system_results.loc[0, 'Total heat energy consumption (kWh)'] = np.sum(np.round(t
 system_results.loc[0, 'Net EV energy consumption (kWh)'] = np.sum(np.round(total_EV_energy_base_case, 2))
 system_results.loc[0, 'Peak load (kW)'] = np.max(total_grid_energy_base_case)
 
-
-
 system_results.loc[1, 'Case type'] = 'Optimal'
 system_results.loc[1, 'Grid energy consumption (kWh)'] = np.round(np.sum(net_system_grid_load_optimal/time_step_per_hour), 2)
 system_results.loc[1, 'Energy consumption cost (€)'] = np.round(np.sum(net_system_grid_cost_optimal/time_step_per_hour), 2)
@@ -282,6 +279,8 @@ system_results.loc[1, 'Peak load (kW)'] = np.max(net_system_grid_load_optimal)
 system_results.loc[1, 'Max pos (kW)'] = np.max(net_system_grid_load_optimal-net_system_grid_load_base)
 system_results.loc[1, 'Max neg (kW)'] = np.min(net_system_grid_load_optimal-net_system_grid_load_base)
 
+
+# Generate plots
 EV_soc_fig, temp_fig, load_change_grid, solar_consumption, optimal_applicance_status, base_case_appliance_status, solar_community,\
         community_soc, community_status, load_change_grid_system, fig_bar_comparison_grid_energy, fig_bar_comparison_energy,\
         fig_bar_comparison_cost, fig_bar_comparison_heat_energy, fig_bar_comparison_EV_energy,\
@@ -292,19 +291,13 @@ EV_soc_fig, temp_fig, load_change_grid, solar_consumption, optimal_applicance_st
     net_system_grid_load_base, net_system_grid_load_optimal, result_csv, system_results, SimLength, soc_min, soc_max, house_plot,
     soc_deadline, one_plus_deadline, soc, soc_uncontrolled_evolution, start_times, end_times, T_upper_bound, T_lower_bound, T_set, temperature,
     bang_bang_control_temp, bang_bang_control_status, charge, discharge, heater_status, inflexible_load, solar_charge, 
-    soc_uncontrolled_status, solar_base_case, solar_data_multi_home, grid_load_base, grid_load_optimal, comm_battery_init_soc, comm_batt, range_anxiety, EV_status, V2G_status)
+    soc_uncontrolled_status, solar_base_case, solar_data_multi_home, grid_load_base, grid_load_optimal, comm_battery_init_soc, comm_batt, range_anxiety, EV_status, V2G_status,)
 
-
-
-
+# design of web app for plots
 st_plt_template(EV_soc_fig, temp_fig, load_change_grid, solar_consumption, optimal_applicance_status, base_case_appliance_status, solar_community,\
         community_soc, community_status, load_change_grid_system, fig_bar_comparison_grid_energy, fig_bar_comparison_energy,
         fig_bar_comparison_cost, fig_bar_comparison_heat_energy, fig_bar_comparison_EV_energy,
         fig_bar_comparison_self_cons_sol, fig_bar_comparison_self_cons_home, system_fig_bar_comparison_grid_energy, \
         system_fig_bar_comparison_energy, system_fig_bar_comparison_cost, \
         system_fig_bar_comparison_heat_energy, system_fig_bar_comparison_EV_energy,\
-        system_fig_bar_comparison_self_cons_home, system_fig_bar_comparison_self_cons_sol)
-
-# # name based on use of community or not, start soc, end deadline, and use of v2g or not, or mention it on the first page of CSV and result on the 2nd page
-
-
+        system_fig_bar_comparison_self_cons_home, system_fig_bar_comparison_self_cons_sol, comm_batt)

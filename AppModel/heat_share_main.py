@@ -27,7 +27,7 @@ with dataset:
     time_granularity = int(left_col.selectbox('Time granularity (min)', ('15',)))
     csv_name = mid_col.selectbox("Day ahead prices in €/MWh (60-min)", ('Price', 'Price_high'))
     day_ahead = pd.read_csv(f'{data_dir}\{csv_name}.csv', header = None)
-    day = int(right_col.text_input("Calendar day between 0 to 365", value = 50))
+    day = int(right_col.text_input("Calendar day between 0 to 363", value = 50))
     heater_power_csv = left_col.selectbox("Heater power", ('heater_power_share',))
     heater_power = pd.read_csv(f'{data_dir}\{heater_power_csv}.csv', header=None).values
     R_csv = mid_col.selectbox("Heating resistivity °C/Watt (60-min)", ('R_share',))
