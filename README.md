@@ -2,9 +2,7 @@
 
 The work looks into the integration of Demand-side Flexibility in Energy Communities.
 
-## Folder description
-
-### **AppModel**
+## Folder description- AppModel
 The **AppModel** folder has the scripts related to the demand side flexibility modeling.
 The WebApps can be run with the help of command line with path in the folder using the command
 _streamlit run filename.py_
@@ -36,7 +34,8 @@ The different models are related to
 
 Plots: this script contains plot scripts for individual models
 
-**Data**
+## Folder description- AppModel
+The folder contains input data files for the models
 - EV_schedule: File containing relevant inputs related to EV scheduling and solar capacity in Energy Community case
 - heater_power_share, heater_power: Heater power for heat share case, and energy community case
 - inflexibile_load: Profiles for energy community case
