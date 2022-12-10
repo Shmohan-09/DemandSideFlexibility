@@ -17,10 +17,9 @@ def fig_format(fig):
 
 def plot_graphs(time_axis, community_battery, prices, solar_to_community, low_price_charge_community, community_battery_discharge,
     net_system_grid_load_base, net_system_grid_load_optimal, result_csv, system_results, SimLength, soc_min, soc_max, house_plot,
-    soc_deadline, one_plus_deadline, soc, soc_uncontrolled_evolution, start_times, end_times, T_upper_bound, T_lower_bound, T_set, temperature,
+    soc_deadline, one_plus_deadline, soc, soc_uncontrolled_evolution, start_times, end_times, T_upper_bound, T_lower_bound, T_set, temperature, T_out,
     bang_bang_control_temp, bang_bang_control_status, charge, discharge, heater_status, inflexible_load, solar_charge, 
     soc_uncontrolled_status, solar_base_case, solar_data_multi_home, grid_load_base, grid_load_optimal, comm_battery_init_soc, comm_batt, range_sharing, EV_status, V2G_status):
-        
     EV_soc_fig = make_subplots(specs=[[{"secondary_y": True}]])
     EV_soc_fig.add_trace(go.Scatter(x=time_axis, y=np.full((SimLength,),soc_min[:,house_plot-1]), name = 'SOC min', line=dict(color='black', dash = 'dot')))
     EV_soc_fig.add_trace(go.Scatter(x=time_axis, y=np.full((SimLength,),soc_max[:,house_plot-1]),  name = 'SOC max', line=dict(color='black', dash = 'dash')))
@@ -36,6 +35,7 @@ def plot_graphs(time_axis, community_battery, prices, solar_to_community, low_pr
     temp_fig = make_subplots(specs=[[{"secondary_y": True}]])
     temp_fig.add_trace(go.Scatter(x=time_axis, y=np.full((SimLength,),T_upper_bound[:,house_plot-1]), name = 'Upper bound', line=dict(color='black')))
     temp_fig.add_trace(go.Scatter(x=time_axis, y=np.full((SimLength,),T_lower_bound[:,house_plot-1]),  name = 'Lower bound', line=dict(color='black')))
+    temp_fig.add_trace(go.Scatter(x=time_axis, y=T_out[:,house_plot-1]+15,  name = 'Ambient temperature + 15°C', line=dict(color='burlywood')))
     temp_fig.add_trace(go.Scatter(x=time_axis, y=np.full((SimLength,),T_set[:,house_plot-1]), name = 'Setpoint', line=dict(color='gray')))
     temp_fig.add_trace(go.Scatter(x=time_axis, y=temperature.value[:,house_plot-1], name = 'Optimal control', line=dict(color='red')))
     temp_fig.add_trace(go.Scatter(x=time_axis, y=bang_bang_control_temp[:,house_plot-1], name = 'Bang-bang', line=dict(color='pink')))

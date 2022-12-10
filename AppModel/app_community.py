@@ -289,7 +289,7 @@ EV_soc_fig, temp_fig, load_change_grid, solar_consumption, optimal_applicance_st
         system_fig_bar_comparison_heat_energy, system_fig_bar_comparison_EV_energy,\
         system_fig_bar_comparison_self_cons_home, system_fig_bar_comparison_self_cons_sol = plot_graphs(time_axis, community_battery, prices, solar_to_community, low_price_charge_community, community_battery_discharge,
     net_system_grid_load_base, net_system_grid_load_optimal, result_csv, system_results, SimLength, soc_min, soc_max, house_plot,
-    soc_deadline, one_plus_deadline, soc, soc_uncontrolled_evolution, start_times, end_times, T_upper_bound, T_lower_bound, T_set, temperature,
+    soc_deadline, one_plus_deadline, soc, soc_uncontrolled_evolution, start_times, end_times, T_upper_bound, T_lower_bound, T_set, temperature, T_out,
     bang_bang_control_temp, bang_bang_control_status, charge, discharge, heater_status, inflexible_load, solar_charge, 
     soc_uncontrolled_status, solar_base_case, solar_data_multi_home, grid_load_base, grid_load_optimal, comm_battery_init_soc, comm_batt, range_anxiety, EV_status, V2G_status,)
 
