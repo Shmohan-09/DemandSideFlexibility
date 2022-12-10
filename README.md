@@ -47,3 +47,6 @@ The folder contains input data files for the models
 - T_set, T_set_share, T_set_community: Temperature setpoint for heating app, heat share case, and energy community case
 - T_start_share, T_start: Initial temperature heat share case, and energy community case
 - tao, tao_share, tao_community: Heat time constant for heating app, heat share case, and energy community case
+
+## Solvers
+The work relies on the solvers: Gurobi, Mosek and ECOS
