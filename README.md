@@ -34,7 +34,7 @@ The different models are related to
 
 Plots: this script contains plot scripts for individual models
 
-## Folder description- AppModel
+## Folder description- Data
 The folder contains input data files for the models
 - EV_schedule: File containing relevant inputs related to EV scheduling and solar capacity in Energy Community case
 - heater_power_share, heater_power: Heater power for heat share case, and energy community case
